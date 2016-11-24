@@ -45,7 +45,7 @@ class IOKeyEventMonitor{
     IOHIDManagerSetDeviceMatching( hidManager, match );
   }
   deinit {
-    // FIXME find out how to pass nil as an IOKit.IOKit.IOHIDValueCallback to unregister the callback
+    // FIXME find out how to pass nil as an IOKit.IOHIDValueCallback to unregister the callback
     //    IOHIDManagerRegisterInputValueCallback( hidManager, nil as IOKit.IOHIDValueCallback, nil);
   }
   func start()-> Void {
@@ -65,7 +65,7 @@ class IOKeyEventMonitor{
     
     let context = UnsafeMutableRawPointer(Unmanaged.passUnretained(self).toOpaque());
     print("start context \(context)");
-    IOHIDManagerRegisterInputValueCallback( hidManager, myHIDKeyboardCallback, nil);
+    IOHIDManagerRegisterInputValueCallback( hidManager, myHIDKeyboardCallback, context);
     IOHIDManagerScheduleWithRunLoop( hidManager, CFRunLoopGetMain(), CFRunLoopMode.defaultMode!.rawValue);
     IOHIDManagerOpen( hidManager,  IOOptionBits(kIOHIDOptionsTypeNone) );
   }
