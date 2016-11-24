@@ -12,11 +12,11 @@
 //See the License for the specific language governing permissions and
 //limitations under the License.
 
-import IOKit
-import IOKit.usb
-import IOKit.hid
+
 import Foundation
 
 
-let test = IOKeyEventMonitor(usagePage: 0x01, usage: 6);
+let monitor = IOKeyEventMonitor(usagePage: 0x01, usage: 6);
+monitor?.start();
 CFRunLoopRun()
+
