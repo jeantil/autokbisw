@@ -13,9 +13,11 @@
 //limitations under the License.
 
 import Foundation
+import Carbon
 import IOKit
 import IOKit.usb
 import IOKit.hid
+
 
 struct IOKeyEventMonitorContext{
   var lastSeenSender:String
@@ -27,8 +29,12 @@ struct IOKeyEventMonitorContext{
 class IOKeyEventMonitor{
   private
   let hidManager:IOHIDManager
+  let notificationCenter :CFNotificationCenter
   let match:CFMutableDictionary
-  var lastSeenSender:String=""
+  
+  var lastActiveKeyboard:String=""
+  var kb2is:[String: TISInputSource]=[String: TISInputSource]()
+  
   
   private class func createDeviceMatchingDictionary( usagePage:Int,  usage:Int ) -> CFMutableDictionary {
     let dict = [
@@ -41,30 +47,59 @@ class IOKeyEventMonitor{
   
   init? ( usagePage:Int,  usage:Int ){
     hidManager = IOHIDManagerCreate( kCFAllocatorDefault, IOOptionBits(kIOHIDOptionsTypeNone) );
-    match=IOKeyEventMonitor.createDeviceMatchingDictionary(usagePage:usagePage, usage:usage);
+    notificationCenter = CFNotificationCenterGetDistributedCenter();
+    match = IOKeyEventMonitor.createDeviceMatchingDictionary(usagePage:usagePage, usage:usage);
     IOHIDManagerSetDeviceMatching( hidManager, match );
+    
   }
+  
   deinit {
     // FIXME find out how to pass nil as an IOKit.IOHIDValueCallback to unregister the callback
-    //    IOHIDManagerRegisterInputValueCallback( hidManager, nil as IOKit.IOHIDValueCallback, nil);
+    let context = UnsafeMutableRawPointer(Unmanaged.passUnretained(self).toOpaque());
+    //IOHIDManagerRegisterInputValueCallback( hidManager, nil , context);
   }
+  
+  func readInputSource()->String{
+    return "Français";
+  }
+  func restoreInputSource(keyboard:String)->Void{
+    if let targetIs=kb2is[keyboard] {
+      TISSelectInputSource(targetIs)
+    }else {
+      self.storeInputSource(keyboard: keyboard);
+    }
+  }
+  
+  func storeInputSource(keyboard:String)->Void{
+    let currentSource :TISInputSource = TISCopyCurrentKeyboardInputSource().takeUnretainedValue();
+    kb2is[keyboard]=currentSource;
+  }
+
+  func onKeyboardEvent(keyboard:String)->Void{
+    if(self.lastActiveKeyboard != keyboard){
+      self.restoreInputSource(keyboard: keyboard);
+      self.lastActiveKeyboard=keyboard;
+    }else{
+      self.storeInputSource(keyboard: keyboard);
+    }
+  }
+  
   func start()-> Void {
-    
+    let context = UnsafeMutableRawPointer(Unmanaged.passUnretained(self).toOpaque());
     let myHIDKeyboardCallback: IOHIDValueCallback={
       (context, ioreturn, sender, value) in
       let selfPtr = Unmanaged<IOKeyEventMonitor>.fromOpaque(context!).takeUnretainedValue();
-      let sender = Unmanaged<IOKeyEventMonitor>.fromOpaque(sender!).takeUnretainedValue();
-      let senderStr = String(describing:sender);
+      let senderDevice = Unmanaged<IOHIDDevice>.fromOpaque(sender!).takeUnretainedValue();
       
-      if(selfPtr.lastSeenSender != senderStr){
-        print("sender \(context!)");
-        print("sender \(sender)");
-        selfPtr.lastSeenSender = senderStr;
-      }
+      let vendorId=String(describing:IOHIDDeviceGetProperty(senderDevice,kIOHIDVendorIDKey as CFString));
+      let productId=String(describing:IOHIDDeviceGetProperty(senderDevice,kIOHIDProductIDKey as CFString));
+      let product=String(describing:IOHIDDeviceGetProperty(senderDevice,kIOHIDProductKey as CFString));
+      let keyboard = "\(product)[\(vendorId)-\(productId)]";
+      selfPtr.onKeyboardEvent(keyboard:keyboard);
+      
     }
     
-    let context = UnsafeMutableRawPointer(Unmanaged.passUnretained(self).toOpaque());
-    print("start context \(context)");
+    
     IOHIDManagerRegisterInputValueCallback( hidManager, myHIDKeyboardCallback, context);
     IOHIDManagerScheduleWithRunLoop( hidManager, CFRunLoopGetMain(), CFRunLoopMode.defaultMode!.rawValue);
     IOHIDManagerOpen( hidManager,  IOOptionBits(kIOHIDOptionsTypeNone) );
