@@ -3,14 +3,14 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 46;
+	objectVersion = 48;
 	objects = {
 
 /* Begin PBXBuildFile section */
 		0F2C43CC1DE4B6A20076D74F /* autokbisw in CopyFiles */ = {isa = PBXBuildFile; fileRef = 0F81A5041DE48BA7007372C9 /* autokbisw */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
 		0F81A5141DE48C7A007372C9 /* IOKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 0F81A5131DE48C7A007372C9 /* IOKit.framework */; };
 		0FB8D5BC1DE6F3B9006EA5A5 /* main.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0F81A5151DE48CDB007372C9 /* main.swift */; };
-		0FB8D5BD1DE6F3B9006EA5A5 /* IOKeyEventMonitor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0F2C43CF1DE5CC440076D74F /* IOKeyEventMonitor.swift */; };
+		0FB8D5BD1DE6F3B9006EA5A5 /* LayoutMonitor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0F2C43CF1DE5CC440076D74F /* LayoutMonitor.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -28,7 +28,7 @@
 
 /* Begin PBXFileReference section */
 		0F2C43CE1DE4B7DA0076D74F /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
-		0F2C43CF1DE5CC440076D74F /* IOKeyEventMonitor.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = IOKeyEventMonitor.swift; sourceTree = "<group>"; };
+		0F2C43CF1DE5CC440076D74F /* LayoutMonitor.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = LayoutMonitor.swift; sourceTree = "<group>"; };
 		0F81A5041DE48BA7007372C9 /* autokbisw */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = autokbisw; sourceTree = BUILT_PRODUCTS_DIR; };
 		0F81A50F1DE48C2F007372C9 /* autokbisw-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "autokbisw-Bridging-Header.h"; sourceTree = "<group>"; };
 		0F81A5131DE48C7A007372C9 /* IOKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = IOKit.framework; path = System/Library/Frameworks/IOKit.framework; sourceTree = SDKROOT; };
@@ -69,9 +69,9 @@
 			isa = PBXGroup;
 			children = (
 				0F81A50F1DE48C2F007372C9 /* autokbisw-Bridging-Header.h */,
-				0F81A5151DE48CDB007372C9 /* main.swift */,
 				0F2C43CE1DE4B7DA0076D74F /* Info.plist */,
-				0F2C43CF1DE5CC440076D74F /* IOKeyEventMonitor.swift */,
+				0F81A5151DE48CDB007372C9 /* main.swift */,
+				0F2C43CF1DE5CC440076D74F /* LayoutMonitor.swift */,
 			);
 			path = autokbisw;
 			sourceTree = "<group>";
@@ -116,14 +116,13 @@
 				TargetAttributes = {
 					0F81A5031DE48BA6007372C9 = {
 						CreatedOnToolsVersion = 8.1;
-						DevelopmentTeam = KU7V9N4S7T;
 						LastSwiftMigration = 0810;
 						ProvisioningStyle = Automatic;
 					};
 				};
 			};
 			buildConfigurationList = 0F81A4FF1DE48BA6007372C9 /* Build configuration list for PBXProject "autokbisw" */;
-			compatibilityVersion = "Xcode 3.2";
+			compatibilityVersion = "Xcode 8.0";
 			developmentRegion = English;
 			hasScannedForEncodings = 0;
 			knownRegions = (
@@ -145,7 +144,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				0FB8D5BC1DE6F3B9006EA5A5 /* main.swift in Sources */,
-				0FB8D5BD1DE6F3B9006EA5A5 /* IOKeyEventMonitor.swift in Sources */,
+				0FB8D5BD1DE6F3B9006EA5A5 /* LayoutMonitor.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -245,8 +244,9 @@
 			buildSettings = {
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_IDENTITY = "Mac Developer";
-				DEVELOPMENT_TEAM = KU7V9N4S7T;
+				DEVELOPMENT_TEAM = "";
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks @loader_path/../Frameworks";
+				MACOSX_DEPLOYMENT_TARGET = 10.12;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_OBJC_BRIDGING_HEADER = "autokbisw/autokbisw-Bridging-Header.h";
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
@@ -259,8 +259,9 @@
 			buildSettings = {
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_IDENTITY = "Mac Developer";
-				DEVELOPMENT_TEAM = KU7V9N4S7T;
+				DEVELOPMENT_TEAM = "";
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks @loader_path/../Frameworks";
+				MACOSX_DEPLOYMENT_TARGET = 10.12;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_OBJC_BRIDGING_HEADER = "autokbisw/autokbisw-Bridging-Header.h";
 				SWIFT_VERSION = 3.0.1;

@@ -16,7 +16,7 @@
 import Foundation
 
 
-let monitor = IOKeyEventMonitor(usagePage: 0x01, usage: 6);
-monitor?.start();
+let monitor = LayoutMonitor(usagePage: 0x01, usage: 6);
+monitor.start();
 CFRunLoopRun()
 
