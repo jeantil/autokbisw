@@ -31,6 +31,7 @@ class IOKeyEventMonitor {
   let hidManager: IOHIDManager
   let notificationCenter: CFNotificationCenter
   let match: CFMutableDictionary
+  var defaults: UserDefaults
 
   var lastActiveKeyboard: String = ""
   var kb2is: [String: TISInputSource] = [String: TISInputSource]()
@@ -45,11 +46,39 @@ class IOKeyEventMonitor {
     return dict.mutableCopy() as! NSMutableDictionary;
   }
 
+  // Trefex 2017
+  // Parts adapted from github.com/noraesae/kawa. MIT 2016
+  func restorePreferences() -> Void {
+    // Load list of all input sources and filter it to only the proper ones
+    let inputSourceNSArray = TISCreateInputSourceList(nil, false).takeRetainedValue() as NSArray
+    let inputSourceList = inputSourceNSArray as! [TISInputSource]
+    let inputSources = inputSourceList.filter(IOKeyEventMonitor.isProperInputSource)
+
+    // Create a map of inputSource session ids and input source ids
+    var inputMap: [String: TISInputSource] = [String: TISInputSource]()
+    for inputSource in inputSources {
+      var id: String = ""
+      id = IOKeyEventMonitor.getProperty(inputSource, kTISPropertyInputSourceID)!
+      inputMap[id] = inputSource;
+    }
+    
+    // Repopulate kb2is from stored settings
+    if let tempkb2is = self.defaults.object(forKey: "KBSwitcher") as? [String: String] {
+      for tempItem in tempkb2is.keys {
+        let sessionInputSourceID: String
+        sessionInputSourceID = tempkb2is[tempItem]!;
+        kb2is[tempItem] = inputMap[sessionInputSourceID];
+      }
+    }
+  }
+  
   init? ( usagePage: Int, usage: Int) {
     hidManager = IOHIDManagerCreate( kCFAllocatorDefault, IOOptionBits(kIOHIDOptionsTypeNone));
     notificationCenter = CFNotificationCenterGetDistributedCenter();
     match = IOKeyEventMonitor.createDeviceMatchingDictionary(usagePage: usagePage, usage: usage);
     IOHIDManagerSetDeviceMatching( hidManager, match);
+    self.defaults = UserDefaults.standard;
+    self.restorePreferences();
   }
 
   deinit {
@@ -67,10 +96,39 @@ class IOKeyEventMonitor {
       self.storeInputSource(keyboard: keyboard);
     }
   }
+  
+  // github.com/noraesae/kawa. MIT 2016
+  static func getProperty<T>(_ source: TISInputSource, _ key: CFString) -> T? {
+    let cfType = TISGetInputSourceProperty(source, key)
+    if (cfType != nil) {
+      return Unmanaged<AnyObject>.fromOpaque(cfType!).takeUnretainedValue() as? T
+    } else {
+      return nil
+    }
+  }
+  
+  // github.com/noraesae/kawa. MIT 2016
+  static func isProperInputSource(_ source: TISInputSource) -> Bool {
+    let category: String = getProperty(source, kTISPropertyInputSourceCategory)!
+    let selectable: Bool = getProperty(source, kTISPropertyInputSourceIsSelectCapable)!
+    return category == (kTISCategoryKeyboardInputSource as String) && selectable
+  }
 
   func storeInputSource(keyboard: String) -> Void {
     let currentSource: TISInputSource = TISCopyCurrentKeyboardInputSource().takeUnretainedValue();
     kb2is[keyboard] = currentSource;
+    
+    // Prepare kb2is for saving by replacing session id with input source id
+    var savekb2is: [String: String] = [String: String]();
+    
+    for item in kb2is.keys {
+      var id: String = ""
+      id = IOKeyEventMonitor.getProperty(kb2is[item]!, kTISPropertyInputSourceID)!;
+      savekb2is[item] = id;
+    }
+    
+    self.defaults.set(savekb2is, forKey: "KBSwitcher");
+    self.defaults.synchronize();
   }
 
   func onInputSourceChanged() -> Void {
@@ -98,7 +156,6 @@ class IOKeyEventMonitor {
       let product = String(describing: IOHIDDeviceGetProperty(senderDevice, kIOHIDProductKey as CFString));
       let keyboard = "\(product)[\(vendorId)-\(productId)]";
       selfPtr.onKeyboardEvent(keyboard: keyboard);
-
     }
     let inputSourceChanged: CFNotificationCallback = {
       (center, observer, name, notif, userInfo) in
