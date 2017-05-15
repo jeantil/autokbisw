@@ -35,7 +35,7 @@ launchctl load ~/Library/LaunchAgents/eu.byjean.autokbisw.plist
 Clone this repository, make sure you have xcode installed and run the following
 command :
 ```
-xcodebuild -scheme autokbis build
+xcodebuild -scheme autokbisw build
 ```
 In the output will be the path to the built program. It should end with 
 `[...]/dev/opt/autokbis/autokbisw`
