@@ -20,8 +20,8 @@ import IOKit.hid
 
 final internal class IOKeyEventMonitor {
   private let hidManager: IOHIDManager
-  private let notificationCenter: CFNotificationCenter
-
+  
+  fileprivate let notificationCenter: CFNotificationCenter
   fileprivate var lastActiveKeyboard: String = ""
   fileprivate var kb2is: [String: TISInputSource] = [String: TISInputSource]()
 
@@ -41,6 +41,8 @@ final internal class IOKeyEventMonitor {
 
   func start() -> Void {
     let context = UnsafeMutableRawPointer(Unmanaged.passUnretained(self).toOpaque());
+    observeIputSourceChangedNotification(context: context);
+    
     let myHIDKeyboardCallback: IOHIDValueCallback = {
       (context, ioreturn, sender, value) in
       let selfPtr = Unmanaged<IOKeyEventMonitor>.fromOpaque(context!).takeUnretainedValue();
@@ -53,26 +55,33 @@ final internal class IOKeyEventMonitor {
       selfPtr.onKeyboardEvent(keyboard: keyboard);
 
     }
-    let inputSourceChanged: CFNotificationCallback = {
-      (center, observer, name, notif, userInfo) in
-      let selfPtr = Unmanaged<IOKeyEventMonitor>.fromOpaque(observer!).takeUnretainedValue();
-      selfPtr.onInputSourceChanged()
-    }
-
-    CFNotificationCenterAddObserver(notificationCenter,
-                                    context, inputSourceChanged,
-                                    kTISNotifySelectedKeyboardInputSourceChanged, nil,
-                                    CFNotificationSuspensionBehavior.deliverImmediately);
-
 
     IOHIDManagerRegisterInputValueCallback( hidManager, myHIDKeyboardCallback, context);
     IOHIDManagerScheduleWithRunLoop( hidManager, CFRunLoopGetMain(), CFRunLoopMode.defaultMode!.rawValue);
     IOHIDManagerOpen( hidManager, IOOptionBits(kIOHIDOptionsTypeNone));
   }
+  
+  private func observeIputSourceChangedNotification(context:UnsafeMutableRawPointer){
+    let inputSourceChanged: CFNotificationCallback = {
+      (center, observer, name, notif, userInfo) in
+      let selfPtr = Unmanaged<IOKeyEventMonitor>.fromOpaque(observer!).takeUnretainedValue();
+      selfPtr.onInputSourceChanged()
+    }
+    
+    CFNotificationCenterAddObserver(notificationCenter,
+                                    context, inputSourceChanged,
+                                    kTISNotifySelectedKeyboardInputSourceChanged, nil,
+                                    CFNotificationSuspensionBehavior.deliverImmediately);
 
+  }
+  
+  
 }
 
 extension IOKeyEventMonitor {
+  
+  
+  
   func restoreInputSource(keyboard: String) -> Void {
     if let targetIs = kb2is[keyboard] {
       //print("set input source to \(targetIs) for keyboard \(keyboard)");
