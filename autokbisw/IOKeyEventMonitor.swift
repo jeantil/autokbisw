@@ -92,10 +92,9 @@ extension IOKeyEventMonitor {
   }
   
   func onKeyboardEvent(keyboard: String) -> Void {
-    if(self.lastActiveKeyboard != keyboard) {
-      //print("Active keyboard changed from \(self.lastActiveKeyboard) to \(keyboard)");
-      self.restoreInputSource(keyboard: keyboard);
-      self.lastActiveKeyboard = keyboard;
-    }
+    guard self.lastActiveKeyboard != keyboard else { return }
+      
+    self.restoreInputSource(keyboard: keyboard);
+    self.lastActiveKeyboard = keyboard;
   }
 }
