@@ -41,27 +41,15 @@ final internal class IOKeyEventMonitor {
 
   func start() -> Void {
     let context = UnsafeMutableRawPointer(Unmanaged.passUnretained(self).toOpaque());
-    observeIputSourceChangedNotification(context: context);
     
-    let myHIDKeyboardCallback: IOHIDValueCallback = {
-      (context, ioreturn, sender, value) in
-      let selfPtr = Unmanaged<IOKeyEventMonitor>.fromOpaque(context!).takeUnretainedValue();
-      let senderDevice = Unmanaged<IOHIDDevice>.fromOpaque(sender!).takeUnretainedValue();
+    observeIputSourceChangedNotification(context: context);
+    registerHIDKeyboardCallback(context: context);
 
-      let vendorId = String(describing: IOHIDDeviceGetProperty(senderDevice, kIOHIDVendorIDKey as CFString));
-      let productId = String(describing: IOHIDDeviceGetProperty(senderDevice, kIOHIDProductIDKey as CFString));
-      let product = String(describing: IOHIDDeviceGetProperty(senderDevice, kIOHIDProductKey as CFString));
-      let keyboard = "\(product)[\(vendorId)-\(productId)]";
-      selfPtr.onKeyboardEvent(keyboard: keyboard);
-
-    }
-
-    IOHIDManagerRegisterInputValueCallback( hidManager, myHIDKeyboardCallback, context);
     IOHIDManagerScheduleWithRunLoop( hidManager, CFRunLoopGetMain(), CFRunLoopMode.defaultMode!.rawValue);
     IOHIDManagerOpen( hidManager, IOOptionBits(kIOHIDOptionsTypeNone));
   }
   
-  private func observeIputSourceChangedNotification(context:UnsafeMutableRawPointer){
+  private func observeIputSourceChangedNotification(context: UnsafeMutableRawPointer){
     let inputSourceChanged: CFNotificationCallback = {
       (center, observer, name, notif, userInfo) in
       let selfPtr = Unmanaged<IOKeyEventMonitor>.fromOpaque(observer!).takeUnretainedValue();
@@ -75,6 +63,22 @@ final internal class IOKeyEventMonitor {
 
   }
   
+  private func registerHIDKeyboardCallback(context: UnsafeMutableRawPointer){
+    let myHIDKeyboardCallback: IOHIDValueCallback = {
+      (context, ioreturn, sender, value) in
+      let selfPtr = Unmanaged<IOKeyEventMonitor>.fromOpaque(context!).takeUnretainedValue();
+      let senderDevice = Unmanaged<IOHIDDevice>.fromOpaque(sender!).takeUnretainedValue();
+      
+      let vendorId = String(describing: IOHIDDeviceGetProperty(senderDevice, kIOHIDVendorIDKey as CFString));
+      let productId = String(describing: IOHIDDeviceGetProperty(senderDevice, kIOHIDProductIDKey as CFString));
+      let product = String(describing: IOHIDDeviceGetProperty(senderDevice, kIOHIDProductKey as CFString));
+      let keyboard = "\(product)[\(vendorId)-\(productId)]";
+      selfPtr.onKeyboardEvent(keyboard: keyboard);
+      
+    }
+    
+    IOHIDManagerRegisterInputValueCallback( hidManager, myHIDKeyboardCallback, context);
+  }
   
 }
 
