@@ -18,38 +18,18 @@ import IOKit
 import IOKit.usb
 import IOKit.hid
 
-
-struct IOKeyEventMonitorContext {
-  var lastSeenSender: String
-  init(lastSeenSender: String) {
-    self.lastSeenSender = lastSeenSender
-  }
-}
-
-class IOKeyEventMonitor {
-  private
-  let hidManager: IOHIDManager
-  let notificationCenter: CFNotificationCenter
-  let match: CFMutableDictionary
-
-  var lastActiveKeyboard: String = ""
-  var kb2is: [String: TISInputSource] = [String: TISInputSource]()
-
-
-  private class func createDeviceMatchingDictionary( usagePage: Int, usage: Int) -> CFMutableDictionary {
-    let dict = [
-      kIOHIDDeviceUsageKey: usage,
-      kIOHIDDeviceUsagePageKey: usagePage
-    ] as NSDictionary
-
-    return dict.mutableCopy() as! NSMutableDictionary;
-  }
+final internal class IOKeyEventMonitor {
+  private let hidManager: IOHIDManager
+  
+  fileprivate let notificationCenter: CFNotificationCenter
+  fileprivate var lastActiveKeyboard: String = ""
+  fileprivate var kb2is: [String: TISInputSource] = [String: TISInputSource]()
 
   init? ( usagePage: Int, usage: Int) {
     hidManager = IOHIDManagerCreate( kCFAllocatorDefault, IOOptionBits(kIOHIDOptionsTypeNone));
     notificationCenter = CFNotificationCenterGetDistributedCenter();
-    match = IOKeyEventMonitor.createDeviceMatchingDictionary(usagePage: usagePage, usage: usage);
-    IOHIDManagerSetDeviceMatching( hidManager, match);
+    let deviceMatch: CFMutableDictionary = [kIOHIDDeviceUsageKey: usage, kIOHIDDeviceUsagePageKey: usagePage] as NSMutableDictionary
+    IOHIDManagerSetDeviceMatching( hidManager, deviceMatch);
   }
 
   deinit {
@@ -59,6 +39,53 @@ class IOKeyEventMonitor {
     CFNotificationCenterRemoveObserver(notificationCenter, context, CFNotificationName(kTISNotifySelectedKeyboardInputSourceChanged), nil);
   }
 
+  func start() -> Void {
+    let context = UnsafeMutableRawPointer(Unmanaged.passUnretained(self).toOpaque());
+    
+    observeIputSourceChangedNotification(context: context);
+    registerHIDKeyboardCallback(context: context);
+
+    IOHIDManagerScheduleWithRunLoop( hidManager, CFRunLoopGetMain(), CFRunLoopMode.defaultMode!.rawValue);
+    IOHIDManagerOpen( hidManager, IOOptionBits(kIOHIDOptionsTypeNone));
+  }
+  
+  private func observeIputSourceChangedNotification(context: UnsafeMutableRawPointer){
+    let inputSourceChanged: CFNotificationCallback = {
+      (center, observer, name, notif, userInfo) in
+      let selfPtr = Unmanaged<IOKeyEventMonitor>.fromOpaque(observer!).takeUnretainedValue();
+      selfPtr.onInputSourceChanged()
+    }
+    
+    CFNotificationCenterAddObserver(notificationCenter,
+                                    context, inputSourceChanged,
+                                    kTISNotifySelectedKeyboardInputSourceChanged, nil,
+                                    CFNotificationSuspensionBehavior.deliverImmediately);
+
+  }
+  
+  private func registerHIDKeyboardCallback(context: UnsafeMutableRawPointer){
+    let myHIDKeyboardCallback: IOHIDValueCallback = {
+      (context, ioreturn, sender, value) in
+      let selfPtr = Unmanaged<IOKeyEventMonitor>.fromOpaque(context!).takeUnretainedValue();
+      let senderDevice = Unmanaged<IOHIDDevice>.fromOpaque(sender!).takeUnretainedValue();
+      
+      let vendorId = String(describing: IOHIDDeviceGetProperty(senderDevice, kIOHIDVendorIDKey as CFString));
+      let productId = String(describing: IOHIDDeviceGetProperty(senderDevice, kIOHIDProductIDKey as CFString));
+      let product = String(describing: IOHIDDeviceGetProperty(senderDevice, kIOHIDProductKey as CFString));
+      let keyboard = "\(product)[\(vendorId)-\(productId)]";
+      selfPtr.onKeyboardEvent(keyboard: keyboard);
+      
+    }
+    
+    IOHIDManagerRegisterInputValueCallback( hidManager, myHIDKeyboardCallback, context);
+  }
+  
+}
+
+extension IOKeyEventMonitor {
+  
+  
+  
   func restoreInputSource(keyboard: String) -> Void {
     if let targetIs = kb2is[keyboard] {
       //print("set input source to \(targetIs) for keyboard \(keyboard)");
@@ -67,54 +94,20 @@ class IOKeyEventMonitor {
       self.storeInputSource(keyboard: keyboard);
     }
   }
-
+  
   func storeInputSource(keyboard: String) -> Void {
     let currentSource: TISInputSource = TISCopyCurrentKeyboardInputSource().takeUnretainedValue();
     kb2is[keyboard] = currentSource;
   }
-
+  
   func onInputSourceChanged() -> Void {
     self.storeInputSource(keyboard: self.lastActiveKeyboard);
   }
-
+  
   func onKeyboardEvent(keyboard: String) -> Void {
-    if(self.lastActiveKeyboard != keyboard) {
-      //print("Active keyboard changed from \(self.lastActiveKeyboard) to \(keyboard)");
-      self.restoreInputSource(keyboard: keyboard);
-      self.lastActiveKeyboard = keyboard;
-    }
+    guard self.lastActiveKeyboard != keyboard else { return }
+      
+    self.restoreInputSource(keyboard: keyboard);
+    self.lastActiveKeyboard = keyboard;
   }
-
-
-  func start() -> Void {
-    let context = UnsafeMutableRawPointer(Unmanaged.passUnretained(self).toOpaque());
-    let myHIDKeyboardCallback: IOHIDValueCallback = {
-      (context, ioreturn, sender, value) in
-      let selfPtr = Unmanaged<IOKeyEventMonitor>.fromOpaque(context!).takeUnretainedValue();
-      let senderDevice = Unmanaged<IOHIDDevice>.fromOpaque(sender!).takeUnretainedValue();
-
-      let vendorId = String(describing: IOHIDDeviceGetProperty(senderDevice, kIOHIDVendorIDKey as CFString));
-      let productId = String(describing: IOHIDDeviceGetProperty(senderDevice, kIOHIDProductIDKey as CFString));
-      let product = String(describing: IOHIDDeviceGetProperty(senderDevice, kIOHIDProductKey as CFString));
-      let keyboard = "\(product)[\(vendorId)-\(productId)]";
-      selfPtr.onKeyboardEvent(keyboard: keyboard);
-
-    }
-    let inputSourceChanged: CFNotificationCallback = {
-      (center, observer, name, notif, userInfo) in
-      let selfPtr = Unmanaged<IOKeyEventMonitor>.fromOpaque(observer!).takeUnretainedValue();
-      selfPtr.onInputSourceChanged()
-    }
-
-    CFNotificationCenterAddObserver(notificationCenter,
-                                    context, inputSourceChanged,
-                                    kTISNotifySelectedKeyboardInputSourceChanged, nil,
-                                    CFNotificationSuspensionBehavior.deliverImmediately);
-
-
-    IOHIDManagerRegisterInputValueCallback( hidManager, myHIDKeyboardCallback, context);
-    IOHIDManagerScheduleWithRunLoop( hidManager, CFRunLoopGetMain(), CFRunLoopMode.defaultMode!.rawValue);
-    IOHIDManagerOpen( hidManager, IOOptionBits(kIOHIDOptionsTypeNone));
-  }
-
 }
