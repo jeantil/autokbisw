@@ -18,13 +18,12 @@ import IOKit
 import IOKit.usb
 import IOKit.hid
 
-class IOKeyEventMonitor {
-  private
-  let hidManager: IOHIDManager
-  let notificationCenter: CFNotificationCenter
+final internal class IOKeyEventMonitor {
+  private let hidManager: IOHIDManager
+  private let notificationCenter: CFNotificationCenter
 
-  var lastActiveKeyboard: String = ""
-  var kb2is: [String: TISInputSource] = [String: TISInputSource]()
+  fileprivate var lastActiveKeyboard: String = ""
+  fileprivate var kb2is: [String: TISInputSource] = [String: TISInputSource]()
 
   init? ( usagePage: Int, usage: Int) {
     hidManager = IOHIDManagerCreate( kCFAllocatorDefault, IOOptionBits(kIOHIDOptionsTypeNone));
