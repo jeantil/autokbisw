@@ -72,7 +72,8 @@ final internal class IOKeyEventMonitor {
       let vendorId = String(describing: IOHIDDeviceGetProperty(senderDevice, kIOHIDVendorIDKey as CFString));
       let productId = String(describing: IOHIDDeviceGetProperty(senderDevice, kIOHIDProductIDKey as CFString));
       let product = String(describing: IOHIDDeviceGetProperty(senderDevice, kIOHIDProductKey as CFString));
-      let keyboard = "\(product)[\(vendorId)-\(productId)]";
+      let locationID = String(describing: IOHIDDeviceGetProperty(senderDevice, kIOHIDLocationIDKey as CFString));
+      let keyboard = "\(product)[\(vendorId)-\(productId)-\(locationID)]";
       selfPtr.onKeyboardEvent(keyboard: keyboard);
       
     }
