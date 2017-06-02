@@ -18,14 +18,6 @@ import IOKit
 import IOKit.usb
 import IOKit.hid
 
-
-struct IOKeyEventMonitorContext {
-  var lastSeenSender: String
-  init(lastSeenSender: String) {
-    self.lastSeenSender = lastSeenSender
-  }
-}
-
 class IOKeyEventMonitor {
   private
   let hidManager: IOHIDManager
