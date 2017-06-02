@@ -26,21 +26,11 @@ class IOKeyEventMonitor {
   var lastActiveKeyboard: String = ""
   var kb2is: [String: TISInputSource] = [String: TISInputSource]()
 
-
-  private class func createDeviceMatchingDictionary( usagePage: Int, usage: Int) -> CFMutableDictionary {
-    let dict = [
-      kIOHIDDeviceUsageKey: usage,
-      kIOHIDDeviceUsagePageKey: usagePage
-    ] as NSDictionary
-
-    return dict.mutableCopy() as! NSMutableDictionary;
-  }
-
   init? ( usagePage: Int, usage: Int) {
     hidManager = IOHIDManagerCreate( kCFAllocatorDefault, IOOptionBits(kIOHIDOptionsTypeNone));
     notificationCenter = CFNotificationCenterGetDistributedCenter();
-    let match: CFMutableDictionary = IOKeyEventMonitor.createDeviceMatchingDictionary(usagePage: usagePage, usage: usage);
-    IOHIDManagerSetDeviceMatching( hidManager, match);
+    let deviceMatch: CFMutableDictionary = [kIOHIDDeviceUsageKey: usage, kIOHIDDeviceUsagePageKey: usagePage] as NSMutableDictionary
+    IOHIDManagerSetDeviceMatching( hidManager, deviceMatch);
   }
 
   deinit {
