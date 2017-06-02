@@ -39,33 +39,6 @@ final internal class IOKeyEventMonitor {
     CFNotificationCenterRemoveObserver(notificationCenter, context, CFNotificationName(kTISNotifySelectedKeyboardInputSourceChanged), nil);
   }
 
-  func restoreInputSource(keyboard: String) -> Void {
-    if let targetIs = kb2is[keyboard] {
-      //print("set input source to \(targetIs) for keyboard \(keyboard)");
-      TISSelectInputSource(targetIs)
-    } else {
-      self.storeInputSource(keyboard: keyboard);
-    }
-  }
-
-  func storeInputSource(keyboard: String) -> Void {
-    let currentSource: TISInputSource = TISCopyCurrentKeyboardInputSource().takeUnretainedValue();
-    kb2is[keyboard] = currentSource;
-  }
-
-  func onInputSourceChanged() -> Void {
-    self.storeInputSource(keyboard: self.lastActiveKeyboard);
-  }
-
-  func onKeyboardEvent(keyboard: String) -> Void {
-    if(self.lastActiveKeyboard != keyboard) {
-      //print("Active keyboard changed from \(self.lastActiveKeyboard) to \(keyboard)");
-      self.restoreInputSource(keyboard: keyboard);
-      self.lastActiveKeyboard = keyboard;
-    }
-  }
-
-
   func start() -> Void {
     let context = UnsafeMutableRawPointer(Unmanaged.passUnretained(self).toOpaque());
     let myHIDKeyboardCallback: IOHIDValueCallback = {
@@ -97,4 +70,32 @@ final internal class IOKeyEventMonitor {
     IOHIDManagerOpen( hidManager, IOOptionBits(kIOHIDOptionsTypeNone));
   }
 
+}
+
+extension IOKeyEventMonitor {
+  func restoreInputSource(keyboard: String) -> Void {
+    if let targetIs = kb2is[keyboard] {
+      //print("set input source to \(targetIs) for keyboard \(keyboard)");
+      TISSelectInputSource(targetIs)
+    } else {
+      self.storeInputSource(keyboard: keyboard);
+    }
+  }
+  
+  func storeInputSource(keyboard: String) -> Void {
+    let currentSource: TISInputSource = TISCopyCurrentKeyboardInputSource().takeUnretainedValue();
+    kb2is[keyboard] = currentSource;
+  }
+  
+  func onInputSourceChanged() -> Void {
+    self.storeInputSource(keyboard: self.lastActiveKeyboard);
+  }
+  
+  func onKeyboardEvent(keyboard: String) -> Void {
+    if(self.lastActiveKeyboard != keyboard) {
+      //print("Active keyboard changed from \(self.lastActiveKeyboard) to \(keyboard)");
+      self.restoreInputSource(keyboard: keyboard);
+      self.lastActiveKeyboard = keyboard;
+    }
+  }
 }
