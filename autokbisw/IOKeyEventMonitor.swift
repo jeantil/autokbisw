@@ -22,7 +22,6 @@ class IOKeyEventMonitor {
   private
   let hidManager: IOHIDManager
   let notificationCenter: CFNotificationCenter
-  let match: CFMutableDictionary
 
   var lastActiveKeyboard: String = ""
   var kb2is: [String: TISInputSource] = [String: TISInputSource]()
@@ -40,7 +39,7 @@ class IOKeyEventMonitor {
   init? ( usagePage: Int, usage: Int) {
     hidManager = IOHIDManagerCreate( kCFAllocatorDefault, IOOptionBits(kIOHIDOptionsTypeNone));
     notificationCenter = CFNotificationCenterGetDistributedCenter();
-    match = IOKeyEventMonitor.createDeviceMatchingDictionary(usagePage: usagePage, usage: usage);
+    let match: CFMutableDictionary = IOKeyEventMonitor.createDeviceMatchingDictionary(usagePage: usagePage, usage: usage);
     IOHIDManagerSetDeviceMatching( hidManager, match);
   }
 
