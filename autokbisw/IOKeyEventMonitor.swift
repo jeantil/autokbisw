@@ -36,9 +36,8 @@ final internal class IOKeyEventMonitor {
   }
 
   deinit {
-    // FIXME find out how to pass nil as an IOKit.IOHIDValueCallback to unregister the callback
     let context = UnsafeMutableRawPointer(Unmanaged.passUnretained(self).toOpaque());
-    //IOHIDManagerRegisterInputValueCallback( hidManager, nil , context);
+    IOHIDManagerRegisterInputValueCallback( hidManager, Optional.none , context);
     CFNotificationCenterRemoveObserver(notificationCenter, context, CFNotificationName(kTISNotifySelectedKeyboardInputSourceChanged), nil);
   }
 
