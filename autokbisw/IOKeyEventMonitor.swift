@@ -22,14 +22,17 @@ final internal class IOKeyEventMonitor {
   private let hidManager: IOHIDManager
   
   fileprivate let notificationCenter: CFNotificationCenter
+  fileprivate let userOptions: UserOptions
   fileprivate var lastActiveKeyboard: String = ""
   fileprivate var kb2is: [String: TISInputSource] = [String: TISInputSource]()
 
-  init? ( usagePage: Int, usage: Int) {
+  init? ( usagePage: Int, usage: Int, _userOptions: UserOptions) {
+    userOptions = _userOptions;
     hidManager = IOHIDManagerCreate( kCFAllocatorDefault, IOOptionBits(kIOHIDOptionsTypeNone));
     notificationCenter = CFNotificationCenterGetDistributedCenter();
     let deviceMatch: CFMutableDictionary = [kIOHIDDeviceUsageKey: usage, kIOHIDDeviceUsagePageKey: usagePage] as NSMutableDictionary
     IOHIDManagerSetDeviceMatching( hidManager, deviceMatch);
+
   }
 
   deinit {
@@ -72,9 +75,20 @@ final internal class IOKeyEventMonitor {
       let vendorId = String(describing: IOHIDDeviceGetProperty(senderDevice, kIOHIDVendorIDKey as CFString));
       let productId = String(describing: IOHIDDeviceGetProperty(senderDevice, kIOHIDProductIDKey as CFString));
       let product = String(describing: IOHIDDeviceGetProperty(senderDevice, kIOHIDProductKey as CFString));
-      let keyboard = "\(product)[\(vendorId)-\(productId)]";
-      selfPtr.onKeyboardEvent(keyboard: keyboard);
+      let manufacturer = String(describing: IOHIDDeviceGetProperty(senderDevice, kIOHIDManufacturerKey as CFString));
+      let serialNumber = String(describing: IOHIDDeviceGetProperty(senderDevice, kIOHIDSerialNumberKey as CFString));
+      let locationId = String(describing: IOHIDDeviceGetProperty(senderDevice, kIOHIDLocationIDKey as CFString));
+      let uniqueId = String(describing: IOHIDDeviceGetProperty(senderDevice, kIOHIDUniqueIDKey as CFString));
       
+      let keyboard =
+      selfPtr.userOptions.useLocation ?
+      "\(product)-[\(vendorId)-\(productId)-\(manufacturer)-\(serialNumber)-\(locationId)]" :
+      "\(product)-[\(vendorId)-\(productId)-\(manufacturer)-\(serialNumber)]";
+      
+      if(selfPtr.userOptions.verbosity >= UserOptions.TRACE){
+         print("received event from keyboard \(keyboard) - \(locationId) -  \(uniqueId)");
+      }
+      selfPtr.onKeyboardEvent(keyboard: keyboard);    
     }
     
     IOHIDManagerRegisterInputValueCallback( hidManager, myHIDKeyboardCallback, context);
@@ -88,7 +102,9 @@ extension IOKeyEventMonitor {
   
   func restoreInputSource(keyboard: String) -> Void {
     if let targetIs = kb2is[keyboard] {
-      //print("set input source to \(targetIs) for keyboard \(keyboard)");
+      if(userOptions.verbosity >= UserOptions.DEBUG){
+        print("set input source to \(targetIs) for keyboard \(keyboard)");
+      }
       TISSelectInputSource(targetIs)
     } else {
       self.storeInputSource(keyboard: keyboard);

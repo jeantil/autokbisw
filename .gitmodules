@@ -1,0 +1,3 @@
+[submodule "autokbisw/CommandLineKit"]
+	path = autokbisw/CommandLineKit
+	url = git@github.com:jatoben/CommandLine.git

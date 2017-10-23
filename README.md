@@ -32,8 +32,8 @@ launchctl load ~/Library/LaunchAgents/eu.byjean.autokbisw.plist
 
 ### From Source
 
-Clone this repository, make sure you have xcode installed and run the following
-command :
+Clone this repository (using --recursive to init the CommandLineKit submodule), 
+then make sure you have xcode installed and run the following command :
 ```
 xcodebuild -scheme autokbis build
 ```
