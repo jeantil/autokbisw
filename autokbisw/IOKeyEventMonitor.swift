@@ -80,13 +80,15 @@ final internal class IOKeyEventMonitor {
       let locationId = String(describing: IOHIDDeviceGetProperty(senderDevice, kIOHIDLocationIDKey as CFString));
       let uniqueId = String(describing: IOHIDDeviceGetProperty(senderDevice, kIOHIDUniqueIDKey as CFString));
       
-      let keyboard = "\(product) - [\(vendorId)-\(productId)-\(manufacturer)-\(serialNumber)]";
+      let keyboard =
+      selfPtr.userOptions.useLocation ?
+      "\(product)-[\(vendorId)-\(productId)-\(manufacturer)-\(serialNumber)-\(locationId)]" :
+      "\(product)-[\(vendorId)-\(productId)-\(manufacturer)-\(serialNumber)]";
       
       if(selfPtr.userOptions.verbosity >= UserOptions.TRACE){
          print("received event from keyboard \(keyboard) - \(locationId) -  \(uniqueId)");
       }
-      selfPtr.onKeyboardEvent(keyboard: keyboard);
-      
+      selfPtr.onKeyboardEvent(keyboard: keyboard);    
     }
     
     IOHIDManagerRegisterInputValueCallback( hidManager, myHIDKeyboardCallback, context);
