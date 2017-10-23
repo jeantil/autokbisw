@@ -22,14 +22,17 @@ final internal class IOKeyEventMonitor {
   private let hidManager: IOHIDManager
   
   fileprivate let notificationCenter: CFNotificationCenter
+  fileprivate let userOptions: UserOptions
   fileprivate var lastActiveKeyboard: String = ""
   fileprivate var kb2is: [String: TISInputSource] = [String: TISInputSource]()
 
-  init? ( usagePage: Int, usage: Int) {
+  init? ( usagePage: Int, usage: Int, _userOptions: UserOptions) {
+    userOptions = _userOptions;
     hidManager = IOHIDManagerCreate( kCFAllocatorDefault, IOOptionBits(kIOHIDOptionsTypeNone));
     notificationCenter = CFNotificationCenterGetDistributedCenter();
     let deviceMatch: CFMutableDictionary = [kIOHIDDeviceUsageKey: usage, kIOHIDDeviceUsagePageKey: usagePage] as NSMutableDictionary
     IOHIDManagerSetDeviceMatching( hidManager, deviceMatch);
+
   }
 
   deinit {

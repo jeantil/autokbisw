@@ -8,6 +8,10 @@
 
 /* Begin PBXBuildFile section */
 		0F2C43CC1DE4B6A20076D74F /* autokbisw in CopyFiles */ = {isa = PBXBuildFile; fileRef = 0F81A5041DE48BA7007372C9 /* autokbisw */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
+		0F80A1E91F9E4EEF0012D75D /* UserOptions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0F80A1E81F9E4EEF0012D75D /* UserOptions.swift */; };
+		0F80A21B1F9E7F060012D75D /* Option.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0F80A2181F9E7F050012D75D /* Option.swift */; };
+		0F80A21C1F9E7F060012D75D /* CommandLine.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0F80A2191F9E7F050012D75D /* CommandLine.swift */; };
+		0F80A21D1F9E7F060012D75D /* StringExtensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0F80A21A1F9E7F050012D75D /* StringExtensions.swift */; };
 		0F81A5141DE48C7A007372C9 /* IOKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 0F81A5131DE48C7A007372C9 /* IOKit.framework */; };
 		0FB8D5BC1DE6F3B9006EA5A5 /* main.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0F81A5151DE48CDB007372C9 /* main.swift */; };
 		0FB8D5BD1DE6F3B9006EA5A5 /* IOKeyEventMonitor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0F2C43CF1DE5CC440076D74F /* IOKeyEventMonitor.swift */; };
@@ -29,6 +33,10 @@
 /* Begin PBXFileReference section */
 		0F2C43CE1DE4B7DA0076D74F /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		0F2C43CF1DE5CC440076D74F /* IOKeyEventMonitor.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = IOKeyEventMonitor.swift; sourceTree = "<group>"; };
+		0F80A1E81F9E4EEF0012D75D /* UserOptions.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = UserOptions.swift; sourceTree = "<group>"; };
+		0F80A2181F9E7F050012D75D /* Option.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Option.swift; sourceTree = "<group>"; };
+		0F80A2191F9E7F050012D75D /* CommandLine.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CommandLine.swift; sourceTree = "<group>"; };
+		0F80A21A1F9E7F050012D75D /* StringExtensions.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = StringExtensions.swift; sourceTree = "<group>"; };
 		0F81A5041DE48BA7007372C9 /* autokbisw */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = autokbisw; sourceTree = BUILT_PRODUCTS_DIR; };
 		0F81A50F1DE48C2F007372C9 /* autokbisw-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "autokbisw-Bridging-Header.h"; sourceTree = "<group>"; };
 		0F81A5131DE48C7A007372C9 /* IOKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = IOKit.framework; path = System/Library/Frameworks/IOKit.framework; sourceTree = SDKROOT; };
@@ -47,6 +55,17 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		0F80A20A1F9E7DD90012D75D /* CommandLineKit */ = {
+			isa = PBXGroup;
+			children = (
+				0F80A2191F9E7F050012D75D /* CommandLine.swift */,
+				0F80A2181F9E7F050012D75D /* Option.swift */,
+				0F80A21A1F9E7F050012D75D /* StringExtensions.swift */,
+			);
+			name = CommandLineKit;
+			path = CommandLineKit/CommandLineKit;
+			sourceTree = "<group>";
+		};
 		0F81A4FB1DE48BA6007372C9 = {
 			isa = PBXGroup;
 			children = (
@@ -68,6 +87,8 @@
 		0F81A5061DE48BA7007372C9 /* autokbisw */ = {
 			isa = PBXGroup;
 			children = (
+				0F80A20A1F9E7DD90012D75D /* CommandLineKit */,
+				0F80A1E81F9E4EEF0012D75D /* UserOptions.swift */,
 				0F81A50F1DE48C2F007372C9 /* autokbisw-Bridging-Header.h */,
 				0F81A5151DE48CDB007372C9 /* main.swift */,
 				0F2C43CE1DE4B7DA0076D74F /* Info.plist */,
@@ -144,8 +165,12 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				0FB8D5BC1DE6F3B9006EA5A5 /* main.swift in Sources */,
+				0F80A21D1F9E7F060012D75D /* StringExtensions.swift in Sources */,
+				0F80A21C1F9E7F060012D75D /* CommandLine.swift in Sources */,
+				0F80A21B1F9E7F060012D75D /* Option.swift in Sources */,
+				0F80A1E91F9E4EEF0012D75D /* UserOptions.swift in Sources */,
 				0FB8D5BD1DE6F3B9006EA5A5 /* IOKeyEventMonitor.swift in Sources */,
+				0FB8D5BC1DE6F3B9006EA5A5 /* main.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

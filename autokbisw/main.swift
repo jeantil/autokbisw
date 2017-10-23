@@ -16,7 +16,25 @@
 import Foundation
 
 
-let monitor = IOKeyEventMonitor(usagePage: 0x01, usage: 6);
-monitor?.start();
-CFRunLoopRun()
+let cli = CommandLine()
 
+cli.addOptions(UserOptions.useLocation, UserOptions.verbosity, UserOptions.help)
+
+do {
+  try cli.parse()
+} catch {
+  cli.printUsage(error)
+  exit(EX_USAGE)
+}
+
+if(UserOptions.help.value){
+  cli.printUsage()
+}else{
+  if(UserOptions.verbosity.value > 0){
+    print("starting with useLocation:\(UserOptions.useLocation.value) - verbosity:\(UserOptions.verbosity.value)");
+  }
+  let userOptions = UserOptions(useLocation: UserOptions.useLocation.value,verbosity: UserOptions.verbosity.value)
+  let monitor = IOKeyEventMonitor(usagePage: 0x01, usage: 6, _userOptions: userOptions);
+  monitor?.start();
+  CFRunLoopRun()
+}
