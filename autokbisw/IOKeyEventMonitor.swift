@@ -20,11 +20,12 @@ import IOKit.hid
 
 final internal class IOKeyEventMonitor {
   private let hidManager: IOHIDManager
-  
+  fileprivate let MAPPINGS_DEFAULTS_KEY = "keyboardISMapping"
   fileprivate let notificationCenter: CFNotificationCenter
   fileprivate let userOptions: UserOptions
   fileprivate var lastActiveKeyboard: String = ""
   fileprivate var kb2is: [String: TISInputSource] = [String: TISInputSource]()
+  fileprivate var defaults: UserDefaults = UserDefaults.standard;
 
   init? ( usagePage: Int, usage: Int, _userOptions: UserOptions) {
     userOptions = _userOptions;
@@ -32,10 +33,11 @@ final internal class IOKeyEventMonitor {
     notificationCenter = CFNotificationCenterGetDistributedCenter();
     let deviceMatch: CFMutableDictionary = [kIOHIDDeviceUsageKey: usage, kIOHIDDeviceUsagePageKey: usagePage] as NSMutableDictionary
     IOHIDManagerSetDeviceMatching( hidManager, deviceMatch);
-
+    self.loadMappings()
   }
 
   deinit {
+    self.saveMappings();
     let context = UnsafeMutableRawPointer(Unmanaged.passUnretained(self).toOpaque());
     IOHIDManagerRegisterInputValueCallback( hidManager, Optional.none , context);
     CFNotificationCenterRemoveObserver(notificationCenter, context, CFNotificationName(kTISNotifySelectedKeyboardInputSourceChanged), nil);
@@ -97,8 +99,6 @@ final internal class IOKeyEventMonitor {
 
 extension IOKeyEventMonitor {
   
-  
-  
   func restoreInputSource(keyboard: String) -> Void {
     if let targetIs = kb2is[keyboard] {
       if(userOptions.verbosity >= UserOptions.DEBUG){
@@ -113,6 +113,7 @@ extension IOKeyEventMonitor {
   func storeInputSource(keyboard: String) -> Void {
     let currentSource: TISInputSource = TISCopyCurrentKeyboardInputSource().takeUnretainedValue();
     kb2is[keyboard] = currentSource;
+    self.saveMappings();
   }
   
   func onInputSourceChanged() -> Void {
@@ -124,5 +125,50 @@ extension IOKeyEventMonitor {
       
     self.restoreInputSource(keyboard: keyboard);
     self.lastActiveKeyboard = keyboard;
+  }
+
+  func loadMappings()-> Void {
+    let selectableIsProperties = [
+      kTISPropertyInputSourceIsEnableCapable:true,
+      kTISPropertyInputSourceCategory:kTISCategoryKeyboardInputSource
+    ] as CFDictionary;
+    let inputSources = TISCreateInputSourceList(selectableIsProperties,false).takeUnretainedValue() as! Array<TISInputSource>
+    
+    let inputSourcesById = inputSources.reduce([String: TISInputSource]()) {
+      (dict, inputSource) -> [String: TISInputSource] in
+      var dict = dict;
+      if let id=unmanagedStringToString(TISGetInputSourceProperty(inputSource, kTISPropertyInputSourceID)) {
+        dict[id] = inputSource;
+      }
+      return dict;
+    }
+    
+    if let mappings=self.defaults.dictionary(forKey: MAPPINGS_DEFAULTS_KEY){
+      for (keyboardId,inputSourceId) in mappings {
+        kb2is[keyboardId]=inputSourcesById[String(describing:inputSourceId)];
+      }
+    }
+  }
+  
+  func saveMappings()-> Void {
+    let mappings = kb2is.mapValues(is2Id)
+    self.defaults.set(mappings, forKey: MAPPINGS_DEFAULTS_KEY)
+  }
+  
+  private func is2Id(_ inputSource:TISInputSource) -> String? {
+    return unmanagedStringToString(TISGetInputSourceProperty(inputSource, kTISPropertyInputSourceID))!
+  }
+  
+  func unmanagedStringToString(_ p : UnsafeMutableRawPointer?) -> String?{
+    if let cfValue = p {
+      let value =  Unmanaged.fromOpaque(cfValue).takeUnretainedValue() as CFString
+      if CFGetTypeID(value) == CFStringGetTypeID(){
+        return value as String
+      } else {
+        return nil
+      }
+    }else{
+      return nil
+    }
   }
 }
