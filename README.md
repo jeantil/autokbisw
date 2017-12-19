@@ -35,15 +35,17 @@ launchctl load ~/Library/LaunchAgents/eu.byjean.autokbisw.plist
 Clone this repository (using --recursive to init the CommandLineKit submodule), 
 then make sure you have xcode installed and run the following command :
 ```
-xcodebuild -scheme autokbis build
+xcodebuild -target autokbisw
 ```
 In the output will be the path to the built program. It should end with 
-`[...]/dev/opt/autokbis/autokbisw`
+`** BUILD SUCCEEDED **`
+
+If that's the case, the runnable program will be in `${PWD}/build/Release/autokbisw`
 
 You can run it as is or _install_ it : 
 
 ```
-cp ${le chemin ci-dessus} /usr/local/bin/
+cp ${PWD}/build/Release/autokbisw /usr/local/bin/
 cp autokbisw/eu.byjean.autokbisw.plist ~/Library/LaunchAgents/
 launchctl load ~/Library/LaunchAgents/eu.byjean.autokbisw.plist
 ```
