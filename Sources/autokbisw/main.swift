@@ -35,6 +35,9 @@ do {
     let useLocation = parsedArguments.get(locationOption) ?? false
     let verbosity = parsedArguments.get(verboseOption) ?? 0
 
+    if verbosity > 0 {
+        print("Starting with useLocation: \(useLocation) - verbosity: \(verbosity)");
+    }
     let monitor = IOKeyEventMonitor(usagePage: 0x01, usage: 6, useLocation: useLocation, verbosity: verbosity)
     monitor?.start()
     CFRunLoopRun()

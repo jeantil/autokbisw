@@ -74,21 +74,20 @@ internal final class IOKeyEventMonitor {
             let selfPtr = Unmanaged<IOKeyEventMonitor>.fromOpaque(context!).takeUnretainedValue()
             let senderDevice = Unmanaged<IOHIDDevice>.fromOpaque(sender!).takeUnretainedValue()
 
-            let vendorId = String(describing: IOHIDDeviceGetProperty(senderDevice, kIOHIDVendorIDKey as CFString))
-            let productId = String(describing: IOHIDDeviceGetProperty(senderDevice, kIOHIDProductIDKey as CFString))
-            let product = String(describing: IOHIDDeviceGetProperty(senderDevice, kIOHIDProductKey as CFString))
-            let manufacturer = String(describing: IOHIDDeviceGetProperty(senderDevice, kIOHIDManufacturerKey as CFString))
-            let serialNumber = String(describing: IOHIDDeviceGetProperty(senderDevice, kIOHIDSerialNumberKey as CFString))
-            let locationId = String(describing: IOHIDDeviceGetProperty(senderDevice, kIOHIDLocationIDKey as CFString))
-            let uniqueId = String(describing: IOHIDDeviceGetProperty(senderDevice, kIOHIDUniqueIDKey as CFString))
+            let vendorId = IOHIDDeviceGetProperty(senderDevice, kIOHIDVendorIDKey as CFString) ??? "unknown"
+            let productId = IOHIDDeviceGetProperty(senderDevice, kIOHIDProductIDKey as CFString) ??? "unknown"
+            let product = IOHIDDeviceGetProperty(senderDevice, kIOHIDProductKey as CFString) ??? "unknown"
+            let manufacturer = IOHIDDeviceGetProperty(senderDevice, kIOHIDManufacturerKey as CFString) ??? "unknown"
+            let serialNumber = IOHIDDeviceGetProperty(senderDevice, kIOHIDSerialNumberKey as CFString) ??? "unknown"
+            let locationId = IOHIDDeviceGetProperty(senderDevice, kIOHIDLocationIDKey as CFString) ??? "unknown"
+            let uniqueId = IOHIDDeviceGetProperty(senderDevice, kIOHIDUniqueIDKey as CFString) ??? "unknown"
 
-            let keyboard =
-                selfPtr.useLocation ?
-                "\(product)-[\(vendorId)-\(productId)-\(manufacturer)-\(serialNumber)-\(locationId)]" :
-                "\(product)-[\(vendorId)-\(productId)-\(manufacturer)-\(serialNumber)]"
+            let keyboard = selfPtr.useLocation
+                ? "\(product)-[\(vendorId)-\(productId)-\(manufacturer)-\(serialNumber)-\(locationId)]"
+                : "\(product)-[\(vendorId)-\(productId)-\(manufacturer)-\(serialNumber)]"
 
             if selfPtr.verbosity >= TRACE {
-                print("received event from keyboard \(keyboard) - \(locationId) -  \(uniqueId)")
+                print("received event from keyboard \(keyboard) - \(locationId) - \(uniqueId)")
             }
             selfPtr.onKeyboardEvent(keyboard: keyboard)
         }
@@ -170,4 +169,12 @@ extension IOKeyEventMonitor {
             return nil
         }
     }
+}
+
+// Nicer string interpolation of optional strings, see: https://oleb.net/blog/2016/12/optionals-string-interpolation/
+
+infix operator ???: NilCoalescingPrecedence
+
+public func ???<T>(optional: T?, defaultValue: @autoclosure () -> String) -> String {
+    return optional.map { String(describing: $0) } ?? defaultValue()
 }
