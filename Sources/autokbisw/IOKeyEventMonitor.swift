@@ -22,13 +22,15 @@ final internal class IOKeyEventMonitor {
   private let hidManager: IOHIDManager
   fileprivate let MAPPINGS_DEFAULTS_KEY = "keyboardISMapping"
   fileprivate let notificationCenter: CFNotificationCenter
-  fileprivate let userOptions: UserOptions
   fileprivate var lastActiveKeyboard: String = ""
   fileprivate var kb2is: [String: TISInputSource] = [String: TISInputSource]()
   fileprivate var defaults: UserDefaults = UserDefaults.standard;
+  fileprivate var useLocation: Bool
+  fileprivate var verbosity: Int
 
-  init? ( usagePage: Int, usage: Int, _userOptions: UserOptions) {
-    userOptions = _userOptions;
+  init? ( usagePage: Int, usage: Int, useLocation: Bool, verbosity: Int) {
+    self.useLocation = useLocation
+    self.verbosity = verbosity
     hidManager = IOHIDManagerCreate( kCFAllocatorDefault, IOOptionBits(kIOHIDOptionsTypeNone));
     notificationCenter = CFNotificationCenterGetDistributedCenter();
     let deviceMatch: CFMutableDictionary = [kIOHIDDeviceUsageKey: usage, kIOHIDDeviceUsagePageKey: usagePage] as NSMutableDictionary
@@ -82,11 +84,11 @@ final internal class IOKeyEventMonitor {
       let uniqueId = String(describing: IOHIDDeviceGetProperty(senderDevice, kIOHIDUniqueIDKey as CFString));
       
       let keyboard =
-      selfPtr.userOptions.useLocation ?
+      selfPtr.useLocation ?
       "\(product)-[\(vendorId)-\(productId)-\(manufacturer)-\(serialNumber)-\(locationId)]" :
       "\(product)-[\(vendorId)-\(productId)-\(manufacturer)-\(serialNumber)]";
       
-      if(selfPtr.userOptions.verbosity >= UserOptions.TRACE){
+      if(selfPtr.verbosity >= TRACE){
          print("received event from keyboard \(keyboard) - \(locationId) -  \(uniqueId)");
       }
       selfPtr.onKeyboardEvent(keyboard: keyboard);    
@@ -101,7 +103,7 @@ extension IOKeyEventMonitor {
   
   func restoreInputSource(keyboard: String) -> Void {
     if let targetIs = kb2is[keyboard] {
-      if(userOptions.verbosity >= UserOptions.DEBUG){
+      if(verbosity >= DEBUG){
         print("set input source to \(targetIs) for keyboard \(keyboard)");
       }
       TISSelectInputSource(targetIs)
