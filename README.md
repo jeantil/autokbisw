@@ -30,23 +30,22 @@ cp eu.byjean.autokbisw.plist ~/Library/LaunchAgents/
 launchctl load ~/Library/LaunchAgents/eu.byjean.autokbisw.plist
 ```
 
+### Via [Homebrew](https://brew.sh)
+
+`brew install jeantil/autokbisw/autokbisw`
+
 ### From Source
 
-Clone this repository (using `--recursive` to init the CommandLineKit submodule), 
-then make sure you have xcode installed and run the following command :
+Clone this repository, make sure you have xcode installed and run the following command:
 ```
-xcodebuild -target autokbisw
+swift build --configuration release
 ```
-In the output will be the path to the built program. It should end with 
-`** BUILD SUCCEEDED **`
-
-If that's the case, the runnable program will be in `${PWD}/build/Release/autokbisw`
+In the output will be the path to the built program, something like `${PWD}/.build/${ARCH}/release/autokbisw`.
 
 You can run it as is or _install_ it : 
 
 ```
-cp ${PWD}/build/Release/autokbisw /usr/local/bin/
+cp ${PWD}/.build/${ARCH}/release/autokbisw /usr/local/bin/
 cp autokbisw/eu.byjean.autokbisw.plist ~/Library/LaunchAgents/
 launchctl load ~/Library/LaunchAgents/eu.byjean.autokbisw.plist
 ```
-
