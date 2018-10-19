@@ -40,12 +40,12 @@ Clone this repository, make sure you have xcode installed and run the following 
 ```
 swift build --configuration release
 ```
-In the output will be the path to the built program, something like `${PWD}/.build/${ARCH}/release/autokbisw`.
+In the output will be the path to the built program, something like `${PWD}/.build/release/autokbisw`.
 
 You can run it as is or _install_ it : 
 
 ```
-cp ${PWD}/.build/${ARCH}/release/autokbisw /usr/local/bin/
+cp ${PWD}/.build/release/autokbisw /usr/local/bin/
 cp autokbisw/eu.byjean.autokbisw.plist ~/Library/LaunchAgents/
 launchctl load ~/Library/LaunchAgents/eu.byjean.autokbisw.plist
 ```
