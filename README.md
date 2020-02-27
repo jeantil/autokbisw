@@ -23,7 +23,7 @@ Download one of the binary packages from this repository releases, unzip its
 content to whatever folder suits you and run it. 
 
 If you want the program to start automatically when you log in,
-you can copy the provided plist file to `~/Library/LaunchAgent` and load it
+you can copy the provided plist file to `~/Library/LaunchAgents` and load it
 manually for the first run: 
 ```
 cp eu.byjean.autokbisw.plist ~/Library/LaunchAgents/
