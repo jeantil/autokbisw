@@ -1,4 +1,11 @@
 # Autokbisw - Automatic keyboard input source switcher
+## This project is looking for a maintainer
+
+I tried to keep the project working accross OS updates for a while but I don't
+really have time to spare to maintain a software I don't use since I switched 
+to ubuntu+lenovo after my MBP died. 
+I'll leave the repository as it is, if someone is willing to take over autokbisw
+and needs me to do something to help just open an issue to let me know. 
 
 ## Motivation
 
