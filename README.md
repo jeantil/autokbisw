@@ -1,11 +1,11 @@
 # Autokbisw - Automatic keyboard input source switcher
-## This project is looking for a maintainer
+## This project has migrated
 
-I tried to keep the project working accross OS updates for a while but I don't
-really have time to spare to maintain a software I don't use since I switched 
-to ubuntu+lenovo after my MBP died. 
-I'll leave the repository as it is, if someone is willing to take over autokbisw
-and needs me to do something to help just open an issue to let me know. 
+@ohueter has taken upon himself to fix the build on newer versions of OSX, 
+the most up to date version of autokbisw can now be found on his fork 
+https://github.com/ohueter/autokbisw
+
+This repository is no longer maintained
 
 ## Motivation
 
